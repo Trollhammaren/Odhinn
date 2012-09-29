@@ -7,16 +7,22 @@ import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class FolderFragment extends ListFragment {
     // properties
     public String ARG_PATH = "SELECTED_PATH";
-    private OnFolderSelected listener;
+    private OnFileSelected listener;
     private File folder;
     
     // methods
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+    
     @Override
     public void onStart() {
         super.onStart();
@@ -27,16 +33,41 @@ public class FolderFragment extends ListFragment {
         }
         this.folder = new File(path);
         Log.v("path", path);
-        String[] items = this.folder.list();
-        for(String j : items) {
-            Log.v("dir", j);
+        String[] items = new String[0];
+        if(this.folder.isDirectory()) {
+            items = this.folder.list();
+            for(String j : items) {
+                Log.v("dir", j);
+            }
         }
         this.setListAdapter(new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_activated_1, items));
     }
     
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
-        this.listener.click(position);
+        if(this.folder.isDirectory()) {
+            File selected = this.folder.listFiles()[position];
+            Log.v("filename", selected.getName());
+            if(selected.isDirectory()) {
+                this.listener.directorySelected(position);
+            } else {
+                String[] split = selected.getName().split("[.]+");
+                String ext = "" + split.length;
+                if(split.length > 1) {
+                    ext = split[split.length - 1];
+                }
+                Log.v("extension", ext);
+                String mime = null;
+                try{
+                    mime = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext);
+                } catch(Exception e){}
+                if(mime == null) {
+                    mime = "Unknown";
+                }
+                this.listener.textFileSelected(position);
+                Log.v("mimetype", mime);
+            }
+        }
     }
     
     /**
@@ -46,7 +77,7 @@ public class FolderFragment extends ListFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            this.listener = (OnFolderSelected) activity;
+            this.listener = (OnFileSelected) activity;
         } catch (ClassCastException e) {
         }
     }
