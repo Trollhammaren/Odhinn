@@ -3,6 +3,8 @@ package com.trollhammaren.odhinn;
 import java.io.File;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ListFragment;
 import android.util.Log;
@@ -51,6 +53,8 @@ public class FolderFragment extends ListFragment {
             if(selected.isDirectory()) {
                 this.listener.directorySelected(position);
             } else {
+                
+                
                 String[] split = selected.getName().split("[.]+");
                 String ext = "" + split.length;
                 if(split.length > 1) {
@@ -63,8 +67,18 @@ public class FolderFragment extends ListFragment {
                 } catch(Exception e){}
                 if(mime == null) {
                     mime = "Unknown";
+                } else if(mime.startsWith("text/")) {
+                    this.listener.textFileSelected(position);
+                } else {
+                    try {
+                        Intent intent = new Intent();
+                        intent.setAction(android.content.Intent.ACTION_VIEW);
+                        intent.setDataAndType(Uri.fromFile(selected), mime);
+                        this.startActivity(intent);
+                    } catch (Exception e) {
+                        this.listener.textFileSelected(position);
+                    }
                 }
-                this.listener.textFileSelected(position);
                 Log.v("mimetype", mime);
             }
         }

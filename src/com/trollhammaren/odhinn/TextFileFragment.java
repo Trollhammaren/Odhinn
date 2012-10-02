@@ -39,16 +39,12 @@ public class TextFileFragment extends Fragment {
         this.file = new File(path);
         String out = "Unable to display contents.";
         try{
-            if(this.file.length() > 1000000) {
-                out = "File is too large to display.";
-            } else {
-                FileInputStream in = new FileInputStream(this.file);
-                byte[] buffer = new byte[in.available()];
-                in.read(buffer);
-                out = "";
-                for(byte b : buffer) {
-                    out += (char) b;
-                }
+            FileInputStream in = new FileInputStream(this.file);
+            byte[] buffer = new byte[in.available()];
+            in.read(buffer);
+            out = "";
+            for(byte b : buffer) {
+                out += (char) b;
             }
             Log.v("contents", out);
         } catch(Exception e) {
